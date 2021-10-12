@@ -25,10 +25,16 @@
       </div>
       <div class="panel-body">
         <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-module" class="form-horizontal">
-          <div class="form-group">
-            <label class="col-sm-2 control-label" for="input-api"><span data-toggle="tooltip" title="{{ help_api }}">{{ entry_api }}</span></label>
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-login"><span data-toggle="tooltip" title="{{ help_redsms }}">{{ entry_login }}</span></label>
             <div class="col-sm-10">
-              <input type="text" class="form-control" id="input-api" name="module_sms_nik_api" value="{{ module_sms_nik_api }}" placeholder="{{ entry_api }}">
+              <input type="text" class="form-control" id="input-login" name="login" value="{{ login }}" placeholder="{{ entry_login }}">
+            </div>
+          </div>
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-api"><span data-toggle="tooltip" title="{{ help_redsms }}">{{ entry_api }}</span></label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="input-api" name="api" value="{{ api }}" placeholder="{{ entry_api }}">
             </div>
           </div>
           <div class="form-group">
@@ -44,6 +50,38 @@
                 <option value="0" {% if sms_code_lifetime_unit == '0' %}selected="selected"{% endif %}>{{ text_seconds }}</option>
                 <option value="1" {% if sms_code_lifetime_unit == '1' %}selected="selected"{% endif %}>{{ text_minutes }}</option>
                 <option value="2" {% if sms_code_lifetime_unit == '2' %}selected="selected"{% endif %}>{{ text_hours }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-sms-code-timeout">{{ entry_sms_code_timeout }}</label>
+            <div class="col-sm-5">
+              <input type="text" name="sms_code_timeout" value="{{ sms_code_timeout }}" placeholder="{{ entry_sms_code_timeout }}" id="input-sms-code-timeout" class="form-control" />
+              {% if error_sms_code_timeout %}
+                <div class="text-danger">{{ error_sms_code_timeout }}</div>
+              {% endif %}
+            </div>
+            <div class="col-sm-5">
+              <select name="sms_code_timeout_unit" id="input-sms-code-timeout-unit" class="form-control">
+                <option value="0" {% if sms_code_timeout_unit == '0' %}selected="selected"{% endif %}>{{ text_seconds }}</option>
+                <option value="1" {% if sms_code_timeout_unit == '1' %}selected="selected"{% endif %}>{{ text_minutes }}</option>
+                <option value="2" {% if sms_code_timeout_unit == '2' %}selected="selected"{% endif %}>{{ text_hours }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-sms-code-count">{{ entry_sms_code_count }}</label>
+            <div class="col-sm-5">
+              <input type="text" name="sms_code_count" value="{{ sms_code_count }}" placeholder="{{ entry_sms_code_count }}" id="input-sms-code-count" class="form-control" />
+              {% if error_sms_code_count %}
+                <div class="text-danger">{{ error_sms_code_count }}</div>
+              {% endif %}
+            </div>
+            <div class="col-sm-5">
+              <select name="sms_code_count_unit" id="input-sms-code-count-unit" class="form-control">
+                <option value="0" {% if sms_code_count_unit == '0' %}selected="selected"{% endif %}>{{ text_in_minute }}</option>
+                <option value="1" {% if sms_code_count_unit == '1' %}selected="selected"{% endif %}>{{ text_in_hour }}</option>
+                <option value="2" {% if sms_code_count_unit == '2' %}selected="selected"{% endif %}>{{ text_in_day }}</option>
               </select>
             </div>
           </div>

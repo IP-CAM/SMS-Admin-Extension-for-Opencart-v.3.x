@@ -8,9 +8,11 @@ class ControllerExtensionModuleSMSNik extends Controller {
 		$this->document->setTitle($this->language->get('heading_title'));
 
 		$this->load->model('setting/setting');
+		$this->load->model('extension/module/sms_nik');
 
 		if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate()) {
-			$this->model_setting_setting->editSetting('module_sms_nik', $this->request->post);
+//			$this->model_setting_setting->editSetting('module_sms_nik', $this->request->post);
+            $this->model_extension_module_sms_nik->saveSmsModuleSettings($this->request->post);
 
 			$this->session->data['success'] = $this->language->get('text_success');
 
@@ -44,11 +46,71 @@ class ControllerExtensionModuleSMSNik extends Controller {
 
 		$data['cancel'] = $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=module', true);
 
-//		if (isset($this->request->post['module_account_status'])) {
-//			$data['module_account_status'] = $this->request->post['module_account_status'];
-//		} else {
-//			$data['module_account_status'] = $this->config->get('module_account_status');
-//		}
+        $sms_settings = $this->model_extension_module_sms_nik->getSmsModuleSettings();
+
+        if (isset($this->request->post['login'])) {
+            $data['login'] = $this->request->post['login'];
+        } elseif (isset($sms_settings['login'])) {
+            $data['login'] = $sms_settings['login'];
+        } else {
+            $data['login'] = '';
+        }
+
+        if (isset($this->request->post['api'])) {
+            $data['api'] = $this->request->post['api'];
+        } elseif (isset($sms_settings['login'])) {
+            $data['api'] = $sms_settings['api'];
+        } else {
+            $data['api'] = '';
+        }
+
+        if (isset($this->request->post['sms_code_lifetime'])) {
+            $data['sms_code_lifetime'] = $this->request->post['sms_code_lifetime'];
+        } elseif (isset($sms_settings['sms_code_lifetime'])) {
+            $data['sms_code_lifetime'] = $sms_settings['sms_code_lifetime'];
+        } else {
+            $data['sms_code_lifetime'] = '';
+        }
+
+        if (isset($this->request->post['sms_code_lifetime_unit'])) {
+            $data['sms_code_lifetime_unit'] = $this->request->post['sms_code_lifetime_unit'];
+        } elseif (isset($sms_settings['sms_code_lifetime_unit'])) {
+            $data['sms_code_lifetime_unit'] = $sms_settings['sms_code_lifetime_unit'];
+        } else {
+            $data['sms_code_lifetime_unit'] = 0;
+        }
+
+        if (isset($this->request->post['sms_code_timeout'])) {
+            $data['sms_code_timeout'] = $this->request->post['sms_code_timeout'];
+        } elseif (isset($sms_settings['sms_code_timeout'])) {
+            $data['sms_code_timeout'] = $sms_settings['sms_code_timeout'];
+        } else {
+            $data['sms_code_timeout'] = '';
+        }
+
+        if (isset($this->request->post['sms_code_timeout_unit'])) {
+            $data['sms_code_timeout_unit'] = $this->request->post['sms_code_timeout_unit'];
+        } elseif (isset($sms_settings['sms_code_timeout_unit'])) {
+            $data['sms_code_timeout_unit'] = $sms_settings['sms_code_timeout_unit'];
+        } else {
+            $data['sms_code_timeout_unit'] = 0;
+        }
+
+        if (isset($this->request->post['sms_code_count'])) {
+            $data['sms_code_count'] = $this->request->post['sms_code_count'];
+        } elseif (isset($sms_settings['sms_code_count'])) {
+            $data['sms_code_count'] = $sms_settings['sms_code_count'];
+        } else {
+            $data['sms_code_count'] = '';
+        }
+
+        if (isset($this->request->post['sms_code_count_unit'])) {
+            $data['sms_code_count_unit'] = $this->request->post['sms_code_count_unit'];
+        } elseif (isset($sms_settings['sms_code_count_unit'])) {
+            $data['sms_code_count_unit'] = $sms_settings['sms_code_count_unit'];
+        } else {
+            $data['sms_code_count_unit'] = 0;
+        }
 
 		$data['header'] = $this->load->controller('common/header');
 		$data['column_left'] = $this->load->controller('common/column_left');
@@ -57,7 +119,24 @@ class ControllerExtensionModuleSMSNik extends Controller {
 		$this->response->setOutput($this->load->view('extension/module/sms_nik', $data));
 	}
 
-	protected function validate() {
+    public function install() {
+        if ($this->user->hasPermission('modify', 'extension/module/sms_nik')) {
+            $this->load->model('extension/module/sms_nik');
+
+            $this->model_extension_module_sms_nik->install();
+        }
+    }
+
+    public function uninstall() {
+        if ($this->user->hasPermission('modify', 'extension/module/sms_nik')) {
+            $this->load->model('extension/module/sms_nik');
+
+            $this->model_extension_module_sms_nik->uninstall();
+        }
+    }
+
+
+    protected function validate() {
 		if (!$this->user->hasPermission('modify', 'extension/module/sms_nik')) {
 			$this->error['warning'] = $this->language->get('error_permission');
 		}
