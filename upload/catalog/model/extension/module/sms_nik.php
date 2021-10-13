@@ -12,12 +12,22 @@ class ModelExtensionModuleSMSNik extends Model {
         return $query->row;
     }
 
-    public function addSmsHistory($phone, $code, $expire) {
-        $this->db->query("INSERT INTO `" . DB_PREFIX . "sms_module_history` SET `phone` = '" . $this->db->escape($phone) . "', `code` = '" . $this->db->escape($code) . "', `expire` = '" . $this->db->escape($expire) . "', `date_sending` = NOW()");
+    public function addSmsHistory($data) {
+        $this->db->query("INSERT INTO `" . DB_PREFIX . "sms_module_history` SET `phone` = '" . $this->db->escape($data['phone']) . "', `code` = '" . $this->db->escape($data['code']) . "', `expire` = '" . $this->db->escape($data['expire']) . "', `ip` = '" . $this->db->escape($data['ip']) . "', `date_sending` = NOW()");
     }
 
     public function verifyCode($phone, $code) {
-        $query = $this->db->query("SELECT `id` FROM `" . DB_PREFIX . "sms_module_history` WHERE `phone` = '" . $phone . "' AND `code` = '" . $this->db->escape($code) . "' AND `expire` > NOW()");
+        $query = $this->db->query("SELECT `id` FROM `" . DB_PREFIX . "sms_module_history` WHERE `phone` = '" . $this->db->escape($phone) . "' AND `code` = '" . $this->db->escape($code) . "' AND `expire` > NOW() AND `status` = '0'");
+
+        return $query->row;
+    }
+
+    public function acceptCode($phone, $code) {
+        $this->db->query("UPDATE `" . DB_PREFIX . "sms_module_history` SET `status` = '1' WHERE `phone` = '" . $this->db->escape($phone) . "' AND `code` = '" . $this->db->escape($code) . "' AND `expire` > NOW()");
+    }
+
+    public function getSmsHistoryByIp($ip) {
+        $query = $this->db->query("SELECT `date_sending` FROM `" . DB_PREFIX . "sms_module_history` WHERE `ip` = '" . $ip . "' AND `status` = '0' ORDER BY `id` DESC");
 
         return $query->row;
     }

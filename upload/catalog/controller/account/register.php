@@ -19,7 +19,10 @@ class ControllerAccountRegister extends Controller {
 		$this->load->model('account/customer');
 
 		if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate()) {
-			$customer_id = $this->model_account_customer->addCustomer($this->request->post);
+		    echo "<pre>";
+		    print_r($this->request->post);
+		    echo "</pre>";
+//			$customer_id = $this->model_account_customer->addCustomer($this->request->post);
 
 			// Clear any previous login attempts for unregistered accounts.
 			$this->model_account_customer->deleteLoginAttempts($this->request->post['email']);
@@ -213,7 +216,7 @@ class ControllerAccountRegister extends Controller {
 			$data['agree'] = false;
 		}
 
-		$data['sms_code'] = $this->load->controller('extension/module/sms_nik');
+		$data['sms_code'] = $this->load->controller('extension/module/sms_nik', $data['error_sms_code']);
 
 		$data['column_left'] = $this->load->controller('common/column_left');
 		$data['column_right'] = $this->load->controller('common/column_right');
@@ -284,9 +287,10 @@ class ControllerAccountRegister extends Controller {
 
             $result = $this->model_extension_module_sms_nik->verifyCode($this->request->post['telephone'], $this->request->post['sms_code']);
 
-            if (!empty($result)) {
+            if (empty($result)) {
                 $this->error['sms_code'] = $this->language->get('error_sms_code');
-                echo "error";
+            } else {
+                $this->model_extension_module_sms_nik->acceptCode($this->request->post['telephone'], $this->request->post['sms_code']);
             }
         }
 

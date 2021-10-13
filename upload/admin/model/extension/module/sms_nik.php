@@ -21,6 +21,8 @@ class ModelExtensionModuleSMSNik extends Model {
               `code` varchar(40) NOT NULL,
               `expire` datetime NOT NULL,
               `date_sending` datetime NOT NULL,
+              `ip` varchar(40) NOT NULL,
+              `status` TINYINT(1) NOT NULL DEFAULT 0,
               PRIMARY KEY (`id`)
             ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 		");
@@ -28,6 +30,7 @@ class ModelExtensionModuleSMSNik extends Model {
 
 	public function uninstall() {
         $this->db->query("DROP TABLE IF EXISTS `" . DB_PREFIX . "sms_module`");
+        $this->db->query("DROP TABLE IF EXISTS `" . DB_PREFIX . "sms_module_history`");
 	}
 
 	public function saveSmsModuleSettings($data) {

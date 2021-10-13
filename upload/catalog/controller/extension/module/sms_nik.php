@@ -1,6 +1,6 @@
 <?php
 class ControllerExtensionModuleSMSNik extends Controller {
-	public function index() {
+	public function index($err_msg = '') {
         $this->load->language('extension/module/sms_nik');
 
         $this->load->model('extension/module/sms_nik');
@@ -20,6 +20,11 @@ class ControllerExtensionModuleSMSNik extends Controller {
             $data['text_sms_code_lifetime'] = sprintf($this->language->get('text_sms_code_lifetime'), $settings['sms_code_lifetime'], $sms_code_lifetime_unit);
         }
 
+        if (isset($err_msg)) {
+            $data['error_sms_code'] = $err_msg;
+        } else {
+            $data['error_sms_code'] = '';
+        }
 
         return $this->load->view('extension/module/sms_nik', $data);
 
@@ -50,31 +55,77 @@ class ControllerExtensionModuleSMSNik extends Controller {
             $this->load->language('extension/module/sms_nik');
             $this->load->model('extension/module/sms_nik');
 
-            do {
-                $code = $this->generateCode();
-
-                $history = $this->model_extension_module_sms_nik->getHistoryByCode($code);
-            } while(!empty($history));
-
             $settings = $this->model_extension_module_sms_nik->getSmsModuleSettings();
 
-            if (isset($settings['sms_code_lifetime']) && isset($settings['sms_code_lifetime_unit'])) {
-                $sms_code_timeout = $settings['sms_code_lifetime'];
-                $sms_code_timeout_unit = $settings['sms_code_lifetime_unit'];
-            } else {
-                // set 10 minute expire time
-                $sms_code_timeout = 10;
-                $sms_code_timeout_unit = 1;
-            }
+            $ip = $this->request->server['REMOTE_ADDR'];
 
-            $expire_time_seconds = $this->convertExpireTimeToSeconds($sms_code_timeout, $sms_code_timeout_unit);
+            $hist = $this->model_extension_module_sms_nik->getSmsHistoryByIp($ip);
 
             date_default_timezone_set('Europe/Moscow');
-            $expire_date = date('Y-m-d H:i:s', time() + $expire_time_seconds);
 
-            $this->model_extension_module_sms_nik->addSmsHistory($this->request->get['phone'], $code, $expire_date);
+            $current_time = time();
+            if (isset($settings['sms_code_timeout']) && isset($settings['sms_code_timeout_unit'])) {
+                $timeout = $this->convertExpireTimeToSeconds($settings['sms_code_timeout'], $settings['sms_code_timeout_unit']);
+            } else {
+                // set 1 minute timeout time
+                $timeout = 60;
+            }
 
-            $json['code'] = $code;
+            if (isset($hist['date_sending'])) {
+                $timeout_date = strtotime($hist['date_sending']) + $timeout;
+            } else {
+                $timeout_date = time() - 1;
+            }
+
+            if ($timeout_date < $current_time) {
+                do {
+                    $code = $this->generateCode();
+
+                    $history = $this->model_extension_module_sms_nik->getHistoryByCode($code);
+                } while(!empty($history));
+
+                if (isset($settings['sms_code_lifetime']) && isset($settings['sms_code_lifetime_unit'])) {
+                    $sms_code_lifetime = $settings['sms_code_lifetime'];
+                    $sms_code_lifetime_unit = $settings['sms_code_lifetime_unit'];
+                } else {
+                    // set 10 minute expire time
+                    $sms_code_lifetime = 10;
+                    $sms_code_lifetime_unit = 1;
+                }
+
+                $expire_time_seconds = $this->convertExpireTimeToSeconds($sms_code_lifetime, $sms_code_lifetime_unit);
+
+                $expire_date = date('Y-m-d H:i:s', time() + $expire_time_seconds);
+
+                $data = array();
+
+                $data['phone'] = $this->request->get['phone'];
+                $data['code'] = $code;
+                $data['expire'] = $expire_date;
+                $data['ip'] = $ip;
+
+                $this->model_extension_module_sms_nik->addSmsHistory($data);
+
+                $json['code'] = $code;
+            } else {
+                $now = time();
+                $then = strtotime($hist['date_sending']);
+                $seconds_timeout_left = $timeout_date - $now;
+
+//                print_r($seconds_timeout_left);
+
+                $time_left = 0;
+
+                if ($seconds_timeout_left <= 60) {
+                    $time_left = sprintf($this->language->get('text_seconds_left'), $seconds_timeout_left);
+                } else if ($seconds_timeout_left > 60 && $seconds_timeout_left < 3600) {
+                    $time_left = sprintf($this->language->get('text_minutes_left'), ($seconds_timeout_left / 60));
+                } else if ($seconds_timeout_left >= 3600) {
+                    $time_left = sprintf($this->language->get('text_hours_left'), ($seconds_timeout_left / 3600));
+                }
+
+                $json['time_left'] = $time_left;
+            }
         }
 
         $this->response->addHeader('Content-Type: application/json');
@@ -99,6 +150,9 @@ class ControllerExtensionModuleSMSNik extends Controller {
     private function convertExpireTimeToSeconds($time, $unitTime) {
         $seconds = 0;
         switch ($unitTime) {
+            case '0':
+                $seconds = $time;
+                break;
             case '1':
                 $seconds = $time * 60;
                 break;

@@ -9,9 +9,9 @@
           <button type="button" class="btn btn-default">{{ text_send_code }}</button>
         </span>
       </div>
-{#      {% if error_sms_code %}#}
-{#        <div class="text-danger">{{ error_sms_code }}</div>#}
-{#      {% endif %}#}
+      {% if error_sms_code %}
+        <div class="text-danger">{{ error_sms_code }}</div>
+      {% endif %}
     </div>
   </div>
 </fieldset>
@@ -27,19 +27,28 @@
               url: 'index.php?route=extension/module/sms_nik/sendActivationCode&phone=' + phone,
               type: 'GET',
               beforeSend: function() {
-                  // $('#recurring-description').html('');
+                  $('.sms-code-info').remove()
+                  $('.sms-code-error').remove()
               },
               success: function(json) {
-                  $('.sms-code-btn').after(
-                      '<p class="sms-code-info">' +
-                      'Ваш код: ' + json['code'] + '.'+
-                      'Смс отправлена по указанному номеру.' +
-                      '<br>' +
-                      '{{ text_sms_code_lifetime }}' +
-                      '<br>' +
-                      '{{ text_sms_code_timeout }}' +
-                      '</p>'
-                  )
+                  if (json['code']) {
+                      $('.sms-code-btn').after(
+                          '<p class="sms-code-info">' +
+                          'Ваш код: ' + json['code'] + '.'+
+                          'Смс отправлена по указанному номеру.' +
+                          '<br>' +
+                          '{{ text_sms_code_lifetime }}' +
+                          '<br>' +
+                          '{{ text_sms_code_timeout }}' +
+                          '</p>'
+                      )
+                  } else {
+                      $('.sms-code-btn').after(
+                          '<p class="sms-code-info">' +
+                          json['time_left'] +
+                          '</p>'
+                      )
+                  }
               }
           });
       } else {
