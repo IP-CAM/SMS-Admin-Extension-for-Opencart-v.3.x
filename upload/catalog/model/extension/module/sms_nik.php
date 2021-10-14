@@ -26,8 +26,18 @@ class ModelExtensionModuleSMSNik extends Model {
         $this->db->query("UPDATE `" . DB_PREFIX . "sms_module_history` SET `status` = '1' WHERE `phone` = '" . $this->db->escape($phone) . "' AND `code` = '" . $this->db->escape($code) . "' AND `expire` > NOW()");
     }
 
-    public function getSmsHistoryByIp($ip) {
-        $query = $this->db->query("SELECT `date_sending` FROM `" . DB_PREFIX . "sms_module_history` WHERE `ip` = '" . $ip . "' AND `status` = '0' ORDER BY `id` DESC");
+    public function getSmsHistoryByIp($ip, $block_time_left, $block_count) {
+        $query = $this->db->query("SELECT `date_sending` FROM `" . DB_PREFIX . "sms_module_history` WHERE `ip` = '" . $ip . "' AND `date_sending` > '" . $block_time_left . "' ORDER BY `id` DESC LIMIT " . (int)$block_count); // AND `status` = '0'
+
+        return $query->rows;
+    }
+
+    public function blockOtherSms($phone) {
+        $this->db->query("UPDATE `" . DB_PREFIX . "sms_module_history` SET `status` = '1' WHERE `phone` = '" . $this->db->escape($phone) . "'");
+    }
+
+    public function getCustomerByPhone($phone) {
+        $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "customer WHERE telephone = '" . $this->db->escape($phone) . "'");
 
         return $query->row;
     }

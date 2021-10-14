@@ -23,10 +23,6 @@ class RedsmsApiSimple
         $this->apiUrl = $apiUrl ? $apiUrl : $this->apiUrl;
     }
 
-    public function testFunction($value) {
-        echo $value;
-    }
-
     public function clientInfo()
     {
         $methodUrl = 'client/info';

@@ -19,10 +19,7 @@ class ControllerAccountRegister extends Controller {
 		$this->load->model('account/customer');
 
 		if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate()) {
-		    echo "<pre>";
-		    print_r($this->request->post);
-		    echo "</pre>";
-//			$customer_id = $this->model_account_customer->addCustomer($this->request->post);
+			$customer_id = $this->model_account_customer->addCustomer($this->request->post);
 
 			// Clear any previous login attempts for unregistered accounts.
 			$this->model_account_customer->deleteLoginAttempts($this->request->post['email']);
@@ -284,6 +281,7 @@ class ControllerAccountRegister extends Controller {
             $this->error['sms_code'] = $this->language->get('error_sms_code');
         } else {
             $this->load->model('extension/module/sms_nik');
+            $this->load->language('extension/module/sms_nik');
 
             $result = $this->model_extension_module_sms_nik->verifyCode($this->request->post['telephone'], $this->request->post['sms_code']);
 

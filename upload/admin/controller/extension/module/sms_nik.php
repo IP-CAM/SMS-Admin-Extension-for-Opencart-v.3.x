@@ -12,7 +12,22 @@ class ControllerExtensionModuleSMSNik extends Controller {
 
 		if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate()) {
 //			$this->model_setting_setting->editSetting('module_sms_nik', $this->request->post);
-            $this->model_extension_module_sms_nik->saveSmsModuleSettings($this->request->post);
+            $post = $this->request->post;
+
+            if (utf8_strlen(trim($post['sms_code_lifetime'])) < 1) {
+                $post['sms_code_lifetime'] = '15';
+                $post['sms_code_lifetime_unit'] = 1;
+            }
+            if (utf8_strlen(trim($post['sms_code_timeout'])) < 1) {
+                $post['sms_code_timeout'] = '60';
+                $post['sms_code_timeout_unit'] = 0;
+            }
+            if (utf8_strlen(trim($post['sms_code_count'])) < 1) {
+                $post['sms_code_count'] = '2';
+                $post['sms_code_count_unit'] = 1;
+            }
+
+            $this->model_extension_module_sms_nik->saveSmsModuleSettings($post);
 
 			$this->session->data['success'] = $this->language->get('text_success');
 
